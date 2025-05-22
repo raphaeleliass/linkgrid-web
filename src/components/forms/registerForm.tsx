@@ -8,7 +8,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { useForm } from "react-hook-form";
+import { useForm, useFormState } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
@@ -19,12 +19,20 @@ import { app } from "@/services/axios/axios.config";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Seu nome deve ter 2 letras no mínimo!").trim(),
+  name: z
+    .string()
+    .min(2, "Seu nome deve ter 2 letras no mínimo!")
+    .max(24, "Nome muito grande")
+    .regex(/^[a-zA-Z0-9._]+$/, "Nome inválido")
+    .trim(),
   username: z
     .string()
     .nonempty("Username não pode estar vazio!")
+    .max(24, "Username muito grande")
+    .regex(/^[a-zA-Z0-9._]+$/, "Username inválido")
     .refine((val) => !val.includes(" "), "Username não pode conter espaços!"),
   email: z.string().email("Email inválido!"),
   password: z.string().min(6, "Sua senha é muito curta!"),
@@ -44,6 +52,8 @@ export default function RegisterForm() {
       password: "",
     },
   });
+
+  const { isSubmitting } = useFormState({ control: form.control });
 
   useEffect(() => {
     const email = sessionStorage.getItem("email");
@@ -110,7 +120,11 @@ export default function RegisterForm() {
                 <FormItem>
                   <FormLabel>Nome</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu nome" {...field} />
+                    <Input
+                      disabled={isSubmitting}
+                      placeholder="Digite seu nome"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,7 +137,11 @@ export default function RegisterForm() {
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu username" {...field} />
+                    <Input
+                      disabled={isSubmitting}
+                      placeholder="Digite seu username"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -137,6 +155,7 @@ export default function RegisterForm() {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
+                      disabled={isSubmitting}
                       placeholder="Digite seu email"
                       type="email"
                       {...field}
@@ -163,8 +182,12 @@ export default function RegisterForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="mt-4">
-              Cadastrar
+            <Button disabled={isSubmitting} type="submit" className="mt-4">
+              {isSubmitting ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Cadastrar"
+              )}
             </Button>
 
             <div className="mt-4 flex gap-2 text-sm">
