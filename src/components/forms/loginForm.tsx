@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFormState } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
@@ -18,6 +18,15 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import { Loader2 } from "lucide-react";
+
+interface ResponseData {
+  data: {
+    id: string;
+    username: string;
+    token: string;
+  };
+}
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido!"),
@@ -35,19 +44,31 @@ export default function LoginForm() {
       password: "",
     },
   });
+  const { isSubmitting } = useFormState({ control: form.control });
 
   async function handleForm({ email, password }: loginTypes) {
     try {
-      const response = await app.post("/users/session", { email, password });
+      const response: ResponseData = await app.post("/users/session", {
+        email,
+        password,
+      });
+
+      await fetch("/api/set-token", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ token: response.data.token }),
+      });
+
       form.reset();
-      router.push("/");
+
+      router.push("/dashboard");
     } catch (err) {
       if (err instanceof AxiosError) {
         switch (err.response?.data.error) {
           case "Invalid credentials":
-            form.setError("email", { message: "Credenciais inválidas" });
-            form.setError("password", { message: "" });
+            form.setError("root", { message: "Email ou senha inválidos" });
             return;
+
           default:
             break;
         }
@@ -74,6 +95,7 @@ export default function LoginForm() {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
+                      disabled={isSubmitting}
                       placeholder="Digite seu email"
                       type="email"
                       {...field}
@@ -93,6 +115,7 @@ export default function LoginForm() {
                     <Input
                       placeholder="Digite sua senha"
                       type="password"
+                      disabled={isSubmitting}
                       {...field}
                     />
                   </FormControl>
@@ -100,8 +123,13 @@ export default function LoginForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="mt-4">
-              Entrar
+            {form.formState.errors.root && (
+              <p className="text-sm text-red-500">
+                {form.formState.errors.root.message}
+              </p>
+            )}
+            <Button disabled={isSubmitting} type="submit" className="mt-4">
+              {isSubmitting ? <Loader2 className="animate-spin" /> : "Entrar"}
             </Button>
             <div className="mt-4 flex gap-2 text-sm">
               <p>Não tem uma conta?</p>
