@@ -1,5 +1,11 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
 
 interface DashboardMenuContextProps {
   selected: string;
@@ -21,6 +27,15 @@ export function useDashboardMenu() {
 
 export function DashboardMenuProvider({ children }: { children: ReactNode }) {
   const [selected, setSelected] = useState<string>("Início");
+
+  useEffect(() => {
+    const currItem = sessionStorage.getItem("menuItem") as string;
+
+    if (!currItem) return;
+
+    setSelected(currItem);
+  }, []);
+
   return (
     <DashboardMenuContext.Provider value={{ selected, setSelected }}>
       {children}

@@ -1,34 +1,22 @@
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+"use client";
 import { useUser } from "@/context/userContext";
-import {
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
-import { ChevronDown, CircleHelp } from "lucide-react";
+import { deleteLink, updateLink } from "@/services/links/link.actions";
+
+import { useEffect, useState } from "react";
+import { LinksTable } from "./LinksTable";
+import { EditLinkForm } from "@/components/forms/editLinkForm";
 
 export default function Links() {
-  const { user } = useUser();
+  const { user, loading } = useUser();
+  const [links, setLinks] = useState(user?.links || []);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedLink, setSelectedLink] = useState<any>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editHref, setEditHref] = useState("");
+
+  useEffect(() => {
+    setLinks(user?.links || []);
+  }, [user]);
 
   function formatDate(dateString: string) {
     return new Intl.DateTimeFormat("pt-BR", {
@@ -45,82 +33,72 @@ export default function Links() {
       .join(" às");
   }
 
+  async function HandleDeleteLink({ id }: { id: string }) {
+    await deleteLink({ id });
+    setLinks((prev) => prev.filter((link) => link.id !== id));
+  }
+
+  function openEditDialog(link: any) {
+    setSelectedLink(link);
+    setEditTitle(link.title);
+    setEditHref(link.href);
+    setEditDialogOpen(true);
+  }
+
+  function closeEditDialog() {
+    setEditDialogOpen(false);
+    setSelectedLink(null);
+  }
+
+  async function handleEditSave() {
+    if (!selectedLink) return;
+    try {
+      await updateLink({
+        id: selectedLink.id,
+        title: editTitle,
+        href: editHref,
+      });
+      setLinks((prev) =>
+        prev.map((link) =>
+          link.id === selectedLink.id
+            ? {
+                ...link,
+                title: editTitle,
+                href: editHref,
+                updated_at: new Date().toISOString(),
+              }
+            : link,
+        ),
+      );
+      setEditDialogOpen(false);
+      setSelectedLink(null);
+    } catch (err) {
+      console.error("Erro ao atualizar o link:", err);
+    }
+  }
+
   return (
     <div>
       <p className="text-2xl font-semibold md:text-3xl">Seus links</p>
-
       <div className="mt-12">
-        <Table>
-          <TableCaption>
-            {user?.links.length === 0
-              ? "Você não possui links"
-              : "Lista com seus links"}
-          </TableCaption>
-          <TableHeader>
-            <TableRow>
-              {["Título", "URL", "Atualizado em", "Criado em", "Ações"].map(
-                (item, index) => (
-                  <TableHead key={index}>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <p className="flex flex-row items-center gap-2">
-                          {item}
-                          <CircleHelp size={14} />
-                        </p>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {item === "Título" && "Esse é o título do seu link"}
-                        {item === "URL" && "Esse é o endereço do seu link"}
-                        {item === "Atualizado em" &&
-                          "Quando seu link foi atualizado pela última vez"}
-                        {item === "Criado em" && "Quando seu link foi criado"}
-                        {item === "Ações" && "Crie, edite ou apague links"}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableHead>
-                ),
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {user?.links.map((link, index) => (
-              <TableRow key={index}>
-                <TableCell>{link.title}</TableCell>
-                <TableCell>
-                  <a
-                    className="text-blue-500 hover:underline"
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                  >
-                    {link.href}
-                  </a>
-                </TableCell>
-                <TableCell>{formatDate(link.updated_at)}</TableCell>
-                <TableCell>{formatDate(link.created_at)}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <Button variant={"ghost"} asChild>
-                        <ChevronDown size={64} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 bg-background border">
-                      <DropdownMenuLabel>
-                        Ações para seus links
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuGroup>
-                        <DropdownMenuItem>teste</DropdownMenuItem>
-                      </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <LinksTable
+          links={links}
+          loading={loading}
+          onEdit={openEditDialog}
+          onDelete={(id) => HandleDeleteLink({ id })}
+          formatDate={formatDate}
+        />
       </div>
+      <EditLinkForm
+        id={selectedLink?.id || ""}
+        open={editDialogOpen}
+        title={editTitle}
+        href={editHref}
+        onTitleChange={setEditTitle}
+        onHrefChange={setEditHref}
+        onClose={closeEditDialog}
+        onSave={handleEditSave}
+      />
     </div>
   );
 }

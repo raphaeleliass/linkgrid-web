@@ -7,7 +7,7 @@ import React, {
   ReactNode,
 } from "react";
 
-interface UserData {
+export interface UserData {
   name: string | null;
   username: string;
   links: {
@@ -23,6 +23,7 @@ interface UserContextType {
   user: UserData | null;
   loading: boolean;
   error: string | null;
+  refreshUser: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -32,43 +33,45 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const token = await fetch("/api/set-token", {
-          method: "GET",
-          headers: { "content-type": "application/json" },
-        })
-          .then((res) => res.json())
-          .then((data) => data.token);
+  const fetchUser = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = await fetch("/api/set-token", {
+        method: "GET",
+        headers: { "content-type": "application/json" },
+      })
+        .then((res) => res.json())
+        .then((data) => data.token);
 
-        const user: UserData = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/users/me`,
-          {
-            next: {
-              revalidate: 12,
-            },
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+      const user: UserData = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/users/me`,
+        {
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        ).then((res) => res.json());
+        },
+      ).then((res) => res.json());
 
-        setUser(user);
-      } catch (err: any) {
-        setError(err.message || "Erro desconhecido");
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+      await fetch("/api/revalidate");
+
+      setUser(user);
+    } catch (err: any) {
+      setError(err.message || "Erro desconhecido");
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUser();
   }, []);
-
   return (
-    <UserContext.Provider value={{ user, loading, error }}>
+    <UserContext.Provider
+      value={{ user, loading, error, refreshUser: fetchUser }}
+    >
       {children}
     </UserContext.Provider>
   );

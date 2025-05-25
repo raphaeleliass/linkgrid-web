@@ -34,11 +34,17 @@ export function AppSidebar() {
   const { toggleSidebar } = useSidebar();
   const { user, loading } = useUser();
 
+  function currMenuItem(item: string) {
+    setSelected(item);
+
+    sessionStorage.setItem("menuItem", item);
+  }
+
   return (
     <Sidebar variant="floating">
       <SidebarContent className="relative">
         <button
-          className="absolute top-0 right-0 p-2"
+          className="absolute top-0 right-0 p-2 md:hidden"
           onClick={() => {
             toggleSidebar();
           }}
@@ -56,7 +62,7 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild>
                       <button
                         onClick={() => {
-                          setSelected(item.title);
+                          currMenuItem(item.title);
                         }}
                       >
                         <Icon />
