@@ -24,6 +24,7 @@
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.6.0",
     "gsap": "^3.13.0",
+    "jose": "^6.0.11",
     "lucide-react": "^0.511.0",
     "motion": "^12.12.1",
     "next": "15.3.2",
