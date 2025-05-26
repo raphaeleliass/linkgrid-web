@@ -1,4 +1,6 @@
-import { Home, Link2 } from "lucide-react";
+"use client";
+import { Home, Link2, Loader2, SidebarClose } from "lucide-react";
+import { useDashboardMenu } from "@/context/dashboard-menu-context";
 
 import {
   Sidebar,
@@ -10,75 +12,75 @@ import {
   SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import { cookies } from "next/headers";
+import { useUser } from "@/context/userContext";
 
-interface UserDetails {
-  name: string | null;
-  username: string;
-  email: string;
-  links: {
-    id: string;
-    title: string;
-    href: string;
-    created_at: string;
-    updated_at: string;
-  }[];
-}
-
-// Menu items.
 const items = [
   {
     title: "Início",
-    url: "#",
     icon: Home,
     badge: false,
   },
   {
     title: "Links",
-    url: "#",
     icon: Link2,
     badge: true,
   },
 ];
 
-export async function AppSidebar() {
-  const cookieStore = await cookies();
+export function AppSidebar() {
+  const { setSelected } = useDashboardMenu();
+  const { toggleSidebar } = useSidebar();
+  const { user, loading } = useUser();
 
-  const token = cookieStore.get("token")?.value;
+  function currMenuItem(item: string) {
+    setSelected(item);
 
-  const userDetails: UserDetails = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/users/me`,
-    {
-      next: { revalidate: 10 },
-      headers: { Authorization: `bearer ${token}` },
-    },
-  ).then((res) => res.json());
-
-  console.log(userDetails);
+    sessionStorage.setItem("menuItem", item);
+  }
 
   return (
     <Sidebar variant="floating">
-      <SidebarContent>
-        <SidebarGroup>
+      <SidebarContent className="relative">
+        <button
+          className="absolute top-0 right-0 p-2 md:hidden"
+          onClick={() => {
+            toggleSidebar();
+          }}
+        >
+          <SidebarClose size={18} />
+        </button>
+        <SidebarGroup className="mt-5">
           <SidebarGroupLabel>LinkGrid</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                  {item.badge && (
-                    <SidebarMenuBadge>
-                      {userDetails.links.length}
-                    </SidebarMenuBadge>
-                  )}
-                </SidebarMenuItem>
-              ))}
+              {items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <button
+                        onClick={() => {
+                          currMenuItem(item.title);
+                        }}
+                      >
+                        <Icon />
+                        <span>{item.title}</span>
+                      </button>
+                    </SidebarMenuButton>
+                    {item.title === "Links" && (
+                      <SidebarMenuBadge>
+                        {loading ? (
+                          <Loader2 className="animate-spin" size={12} />
+                        ) : (
+                          user?.links.length
+                        )}
+                      </SidebarMenuBadge>
+                    )}
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

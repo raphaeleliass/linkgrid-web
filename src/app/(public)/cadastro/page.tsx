@@ -1,6 +1,5 @@
 import RegisterForm from "@/components/forms/registerForm";
 import Navbar from "@/components/ui/navbar";
-import Link from "next/link";
 import React from "react";
 
 export default function Cadastro() {
