@@ -1,45 +1,34 @@
-"use client";
-import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import UserCard from "@/components/ui/user-card";
+import { UserData } from "@/context/userContext";
 import { notFound } from "next/navigation";
 
-interface UserData {
-  name: string;
-  username: string;
-  links: [];
-}
+export default async function User({
+  params,
+}: {
+  params: Promise<{ username: string }> | { username: string };
+}) {
+  const { username } = await params;
 
-export default function page() {
-  const { username } = useParams();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/users/${username}`,
+    { next: { revalidate: 10 } },
+  );
 
-  const [user, setUser] = useState<UserData | undefined>(undefined);
+  if (!res.ok) {
+    return notFound();
+  }
 
-  useEffect(() => {
-    async function handleUserSearch() {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/users/${username}`,
-          {
-            next: {
-              revalidate: 10,
-            },
-            method: "GET",
-          },
-        ).then((res) => res.json());
-
-        console.log(response);
-        setUser(response);
-      } catch (err) {
-        console.log("erro");
-      }
-    }
-
-    handleUserSearch();
-  }, [username]);
+  const userData: UserData = await res.json();
 
   return (
-    <div>
-      {user?.name},{user?.links.map((link) => <div>{link}</div>)}
-    </div>
+    <main className="grid min-h-dvh grid-cols-1">
+      <div className="relative flex w-full bg-gradient-to-b from-sky-500 to-rose-500">
+        <div className="absolute top-1/2 w-full place-content-center justify-items-center">
+          <UserCard userData={userData} />
+        </div>
+      </div>
+
+      <div className="w-full" />
+    </main>
   );
 }

@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -15,10 +16,14 @@ export async function POST(req: Request) {
   return response;
 }
 
-export async function GET(req: Request) {
-  const token = await NextResponse.next().cookies.get("token")?.value;
+export async function GET() {
+  const cookieStore = await cookies();
 
-  if (!token) return null;
+  const token = cookieStore.get("token")?.value;
 
-  return token;
+  if (!token) {
+    return NextResponse.json({ token: null }, { status: 404 });
+  }
+
+  return NextResponse.json({ token });
 }

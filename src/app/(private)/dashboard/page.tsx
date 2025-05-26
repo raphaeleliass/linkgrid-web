@@ -1,7 +1,15 @@
-import React from 'react'
+"use client";
+import { useDashboardMenu } from "@/context/dashboard-menu-context";
+import Links from "@/components/layouts/dashboard/links";
+import DashboardHome from "@/components/layouts/dashboard/DashboardHome";
 
 export default function Dashboard() {
+  const { selected } = useDashboardMenu();
+
   return (
-    <div><h1>lorem*10</h1></div>
-  )
+    <main className="w-full py-12">
+      {selected === "Início" && <DashboardHome />}
+      {selected === "Links" && <Links />}
+    </main>
+  );
 }
