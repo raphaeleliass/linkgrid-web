@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 export default async function User({
   params,
 }: {
-  params: Promise<{ username: string }> | { username: string };
+  params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
 
