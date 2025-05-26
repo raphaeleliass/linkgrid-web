@@ -40,7 +40,7 @@ export default function CreateLinkForm() {
   async function submitForm({ title, href }: FormData) {
     try {
       const token = await getToken();
-      const response = await app.post(
+      await app.post(
         "/links/create",
         { title, href },
         { headers: { Authorization: `Bearer ${token}` } },
@@ -64,7 +64,7 @@ export default function CreateLinkForm() {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(submitForm)}>
+          <form onSubmit={form.handleSubmit(submitForm)} className="space-y-6">
             <FormField
               name="title"
               control={form.control}

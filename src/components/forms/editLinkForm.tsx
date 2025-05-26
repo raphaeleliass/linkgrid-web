@@ -11,8 +11,6 @@ import { useForm, useFormState } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
-import { app } from "@/services/axios/axios.config";
-import { getToken } from "@/services/actions/getToken";
 import { updateLink } from "@/services/links/link.actions";
 
 const editLinkSchema = z.object({

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -17,7 +17,6 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { app } from "@/services/axios/axios.config";
 import { AxiosError } from "axios";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -63,7 +62,7 @@ export default function RegisterForm() {
     form.setValue("email", email);
 
     sessionStorage.removeItem("email");
-  }, []);
+  }, [form]);
 
   async function handleForm({
     name,

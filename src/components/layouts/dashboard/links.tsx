@@ -6,11 +6,19 @@ import { useEffect, useState } from "react";
 import { LinksTable } from "./LinksTable";
 import { EditLinkForm } from "@/components/forms/editLinkForm";
 
+interface Props {
+  id: string;
+  title: string;
+  href: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function Links() {
   const { user, loading } = useUser();
   const [links, setLinks] = useState(user?.links || []);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedLink, setSelectedLink] = useState<any>(null);
+  const [selectedLink, setSelectedLink] = useState<Props | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editHref, setEditHref] = useState("");
 
@@ -38,7 +46,7 @@ export default function Links() {
     setLinks((prev) => prev.filter((link) => link.id !== id));
   }
 
-  function openEditDialog(link: any) {
+  function openEditDialog(link: Props) {
     setSelectedLink(link);
     setEditTitle(link.title);
     setEditHref(link.href);

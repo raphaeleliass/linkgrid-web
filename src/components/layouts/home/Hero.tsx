@@ -2,7 +2,6 @@
 import { LampContainer } from "@/components/ui/lamp";
 import { ArrowDown } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
 export default function Hero() {
   return (
     <section className="relative flex items-center justify-center">

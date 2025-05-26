@@ -14,7 +14,7 @@ export default async function middleware(req: NextRequest) {
 
   if (protectedRoutes.includes(pathname)) {
     if (!isValid) {
-      return NextResponse.redirect(new URL("/", req.url));
+      return NextResponse.redirect(new URL("/entrar", req.url));
     }
     return NextResponse.next();
   }

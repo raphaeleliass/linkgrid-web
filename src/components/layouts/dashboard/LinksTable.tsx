@@ -24,11 +24,12 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { ChevronDown, CircleHelp, Pencil, Trash2 } from "lucide-react";
+import { UserData } from "@/context/userContext";
 
 interface LinksTableProps {
-  links: any[];
+  links: UserData["links"];
   loading: boolean;
-  onEdit: (link: any) => void;
+  onEdit: (link: UserData["links"][number]) => void;
   onDelete: (id: string) => void;
   formatDate: (dateString: string) => string;
 }
@@ -84,8 +85,10 @@ export function LinksTable({
             ))
           : links.map((link, index) => (
               <TableRow key={index}>
-                <TableCell className=" truncate max-w-12">{link.title}</TableCell>
-                <TableCell  className=" truncate max-w-12">
+                <TableCell className="max-w-12 truncate">
+                  {link.title}
+                </TableCell>
+                <TableCell className="max-w-12 truncate">
                   <a
                     className="text-blue-500 hover:underline"
                     href={link.href}

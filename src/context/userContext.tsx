@@ -57,8 +57,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       await fetch("/api/revalidate");
 
       setUser(user);
-    } catch (err: any) {
-      setError(err.message || "Erro desconhecido");
+    } catch (err) {
+      if (err instanceof Error) setError(err.message || "Erro desconhecido");
       setUser(null);
     } finally {
       setLoading(false);
