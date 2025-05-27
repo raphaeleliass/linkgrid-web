@@ -11,7 +11,7 @@ export default async function User({
 
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/users/${username}`,
-    { next: { revalidate: 10 } },
+    { next: { revalidate: 10 }, credentials: "include" },
   );
 
   if (!res.ok) {

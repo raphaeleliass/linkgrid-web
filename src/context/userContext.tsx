@@ -48,6 +48,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         `${process.env.NEXT_PUBLIC_BASE_URL}/users/me`,
         {
           cache: "no-store",
+          credentials: "include",
           headers: {
             Authorization: `Bearer ${token}`,
           },

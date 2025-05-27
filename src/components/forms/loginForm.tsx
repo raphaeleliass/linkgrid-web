@@ -55,6 +55,7 @@ export default function LoginForm() {
 
       await fetch("/api/set-token", {
         method: "POST",
+        credentials: "include",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ token: response.data.token }),
       });

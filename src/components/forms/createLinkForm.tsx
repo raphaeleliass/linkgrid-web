@@ -43,7 +43,9 @@ export default function CreateLinkForm() {
       await app.post(
         "/links/create",
         { title, href },
-        { headers: { Authorization: `Bearer ${token}` } },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
 
       await fetch("/api/revalidate");
